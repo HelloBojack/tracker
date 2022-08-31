@@ -4,7 +4,7 @@ import dts from "rollup-plugin-dts";
 export default [
   {
     //入口文件
-    input: "/src/core/index.ts",
+    input: "./src/core/index.ts",
     output: [
       //打包esModule
       {
