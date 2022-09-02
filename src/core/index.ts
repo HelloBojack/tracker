@@ -43,6 +43,9 @@ export default class Tracker {
     if (this.data.domTracker) {
       this.reportTargetKey();
     }
+    if (this.data.jsError) {
+      this.reportJSErrorEvent();
+    }
   }
 
   private captureEvents(eventList: string[], key: string) {
@@ -61,6 +64,25 @@ export default class Tracker {
         if (targetKey) {
           this.reportTracker({ event, targetKey });
         }
+      });
+    });
+  }
+
+  private reportJSErrorEvent() {
+    window.addEventListener("error", (event) => {
+      this.reportTracker({
+        event: "js-error",
+        targetKey: "errormessage",
+        message: event.message,
+      });
+    });
+    window.addEventListener("unhandledrejection", (event) => {
+      event.promise.catch((error) => {
+        this.reportTracker({
+          event: "promise-error",
+          targetKey: "errormessage",
+          message: error,
+        });
       });
     });
   }
