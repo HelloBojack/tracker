@@ -1,5 +1,16 @@
 import { DefaultOptions, Options, TrackerConfig } from "../type/index";
 import { initHistoryEvent } from "../utils/index";
+
+const MouseEventList: string[] = [
+  "click",
+  "dblclick",
+  "contextmenu",
+  "mousedown",
+  "mouseup",
+  "mouseenter",
+  "mouseout",
+  "mouseover",
+];
 export default class Tracker {
   private version: string | undefined;
   public data: Options;
@@ -24,13 +35,13 @@ export default class Tracker {
   private installInnerTracker() {
     if (this.data.historyTracker) {
       initHistoryEvent();
-      this.captureEvents(
-        ["pushState", "popState", "replaceState"],
-        "history-pv"
-      );
+      this.captureEvents(["pushState", "replaceState"], "history-pv");
     }
     if (this.data.hashTracker) {
       this.captureEvents(["hashchange"], "hash-pv");
+    }
+    if (this.data.domTracker) {
+      this.reportTargetKey();
     }
   }
 
@@ -42,7 +53,21 @@ export default class Tracker {
     });
   }
 
+  private reportTargetKey() {
+    MouseEventList.forEach((event) => {
+      window.addEventListener(event, (e) => {
+        const target = e.target as HTMLElement;
+        const targetKey = target.getAttribute("target-key");
+        if (targetKey) {
+          this.reportTracker({ event, targetKey });
+        }
+      });
+    });
+  }
+
   private reportTracker(data: any) {
+    console.log("监听", data);
+
     const params = { ...this.data, ...data, time: new Date().getTime() };
     const header = {
       type: "application/x-www-form-urlencoded",
